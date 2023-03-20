@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -32,7 +31,7 @@ type CliArgs struct {
 	PgDsn     string `arg:"--pgdsn" help:"PostgreSQL DSN" default:"postgres://postgres:postgres@localhost:5432/postgres"`
 	MyCnfPath string `arg:"--my-cnf-path" help:"Path to mysqld.cnf file" default:"/etc/mysql/mysql.conf.d/mysqld.cnf"`
 	DbType    string `arg:"--db-type,required" help:"Database type (mysql or postgres)"`
-	IoStatCmd string `arg:"--iostat-cmd" help:"iostat command, do not give any $var/num shell evaluate commands" default:"iostat -dmx 1 2 nvme3n1|tail -n 2|tr -s ' '|cut -d ' ' -f2,3,4,5,16"`
+	// IoStatCmd string `arg:"--iostat-cmd" help:"iostat command, do not give any $var/num shell evaluate commands" default:"iostat -dmx 1 2 nvme3n1|tail -n 2|tr -s ' '|cut -d ' ' -f2,3,4,5,16"`
 }
 
 func init() {
@@ -77,7 +76,7 @@ func stop() error {
 	fmt.Println("stopping database using command: ", args.StopCmd)
 	err := cmd.Run()
 
-	// If db stop failes, then ignore the error by logging the message into the log file
+	// If db stop fails, then ignore the error by logging the message into the log file
 	if errb.String() != "" {
 		fmt.Printf("message while starting service: %s", outb.String()+"\n"+errb.String())
 	}
@@ -128,64 +127,72 @@ func nodeInfo() (string, error) {
 }
 
 func getIOStat() (tps float64, read float64, write float64, readmbps float64, writembps float64, util float64, err error) {
-	var outb, errb bytes.Buffer
-	//
-	//XXX
-	//This has been teste with iostat below version,
-	//which is working fine.
-	// [postgres@ip-10-0-10-27 ~]$ iostat -V
-	// sysstat version 11.7.3
-	// (C) Sebastien Godard (sysstat <at> orange.fr)
-	cmd := exec.Command("bash", "-c", args.IoStatCmd)
-
-	cmd.Stdout = &outb
-	cmd.Stderr = &errb
-
-	err = cmd.Run()
-
-	if err != nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while getting iostat: %v", err)
-	}
-
-	if errb.String() != "" {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while getting iostat: %v", errb.String())
-	}
-
-	// Parse the output
-	// Device:                reads/s    writes/s    Mb_read    Mb_write ... Util
-
-	output := strings.TrimSpace(outb.String())
-
-	// Split string based on spaces
-
-	iops := strings.Split(output, " ")
-
-	read, err = strconv.ParseFloat(iops[0], 64)
-	if err != nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing read iostat: %v", err)
-	}
-	write, err = strconv.ParseFloat(iops[1], 64)
-	if err != nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing write iostat: %v", err)
-	}
-
-	readmbps, err = strconv.ParseFloat(iops[2], 64)
-	if err != nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing readmb iostat: %v", err)
-	}
-
-	writembps, err = strconv.ParseFloat(iops[3], 64)
-	if err != nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing writemb iostat: %v", err)
-	}
-
-	util, err = strconv.ParseFloat(iops[4], 64)
-	if err != nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing util iostat: %v", err)
-	}
-
-	return (read + write), read, write, readmbps, writembps, util, nil
+	return 0, 0, 0, 0, 0, 0, nil
 }
+
+// XXX
+// We should find a way to get the iostat for the disk
+// IOSTAT command producing different output with different versions of linux and its own version
+// So, we are not using this for now, but keeping this for reference
+// func getIOStat() (tps float64, read float64, write float64, readmbps float64, writembps float64, util float64, err error) {
+// 	var outb, errb bytes.Buffer
+// 	//
+// 	//XXX
+// 	//This has been teste with iostat below version,
+// 	//which is working fine.
+// 	// [postgres@ip-10-0-10-27 ~]$ iostat -V
+// 	// sysstat version 11.7.3
+// 	// (C) Sebastien Godard (sysstat <at> orange.fr)
+// 	cmd := exec.Command("bash", "-c", args.IoStatCmd)
+
+// 	cmd.Stdout = &outb
+// 	cmd.Stderr = &errb
+
+// 	err = cmd.Run()
+
+// 	if err != nil {
+// 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while getting iostat: %v", err)
+// 	}
+
+// 	if errb.String() != "" {
+// 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while getting iostat: %v", errb.String())
+// 	}
+
+// 	// Parse the output
+// 	// Device:                reads/s    writes/s    Mb_read    Mb_write ... Util
+
+// 	output := strings.TrimSpace(outb.String())
+
+// 	// Split string based on spaces
+
+// 	iops := strings.Split(output, " ")
+
+// 	read, err = strconv.ParseFloat(iops[0], 64)
+// 	if err != nil {
+// 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing read iostat: %v", err)
+// 	}
+// 	write, err = strconv.ParseFloat(iops[1], 64)
+// 	if err != nil {
+// 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing write iostat: %v", err)
+// 	}
+
+// 	readmbps, err = strconv.ParseFloat(iops[2], 64)
+// 	if err != nil {
+// 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing readmb iostat: %v", err)
+// 	}
+
+// 	writembps, err = strconv.ParseFloat(iops[3], 64)
+// 	if err != nil {
+// 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing writemb iostat: %v", err)
+// 	}
+
+// 	util, err = strconv.ParseFloat(iops[4], 64)
+// 	if err != nil {
+// 		return 0, 0, 0, 0, 0, 0, fmt.Errorf("error while parsing util iostat: %v", err)
+// 	}
+
+// 	return (read + write), read, write, readmbps, writembps, util, nil
+// }
 
 func getMetrics() (*model.Metric, error) {
 	cpu, err := cpu.PercentWithContext(context.Background(), time.Duration(1*time.Second), false)
