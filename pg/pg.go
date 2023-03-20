@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"dbcontrol.tessell/model"
+	"hammerpost-agent/model"
+
 	"github.com/jackc/pgx/v4"
 )
 

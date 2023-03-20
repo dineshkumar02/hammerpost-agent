@@ -11,9 +11,10 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"dbcontrol.tessell/model"
-	"dbcontrol.tessell/mysql"
-	"dbcontrol.tessell/pg"
+	"hammerpost-agent/model"
+	"hammerpost-agent/mysql"
+	"hammerpost-agent/pg"
+
 	"github.com/alexflint/go-arg"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/cpu"

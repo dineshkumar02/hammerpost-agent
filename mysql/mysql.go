@@ -3,7 +3,7 @@ package mysql
 import (
 	"os"
 
-	"dbcontrol.tessell/model"
+	"hammerpost-agent/model"
 )
 
 func UpdateMysqlParameter(mycnfPath string, param []model.Param) error {
