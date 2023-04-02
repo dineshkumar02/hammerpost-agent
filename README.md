@@ -1,6 +1,8 @@
 ## Hammerpost Agent
 
-The `hammerpost-agent` tool works with `hammerpost`. This tool adds parameters to PostgreSQL via `ALTER SYSTEM` and appends the given parameters to the `my.cnf` file for MySQL. This tool also restarts PostgreSQL or MySQL after applying the given parameter set. This tool is also responsible for collecting node metrics like `CPU` and `Memory` while running the `HammerDB` workload.
+The `hammerpost-agent` tool works with `hammerpost`. This tool adds parameters to PostgreSQL via `ALTER SYSTEM`.
+If the database type is `MySQL` then it appends the given parameters to the `my.cnf` file for MySQL.
+This tool also restarts PostgreSQL or MySQL after applying the given parameter set. It is also responsible for collecting node metrics like `CPU` and `Memory` while running the `HammerDB` workload.
 
 ## Quick Setup
 
