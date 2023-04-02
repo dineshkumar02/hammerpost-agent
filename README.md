@@ -9,9 +9,11 @@ The `hammerpost-agent` tool works with `hammerpost`. This tool adds parameters t
 
 
 1. Install golang 1.18
+
         $ sudo yum install golang
 
 2. Clone this repo and make
+
         $ git clone https://github.com/dineshkumar02/hammerpost-agent.git
         $ cd hammerpost-agent
         $ make
